@@ -110,6 +110,15 @@ const indentityDataSlice = createSlice({
           if (action.payload) {
             state.identityStatement = state.identityStatement.map((data) => {
               if (action.payload?.result.question_id === data.id) {
+                state.currentQuestion = {
+                  ...state.currentQuestion,
+                  id: state.currentQuestion?.id || -1,
+                  ques_stmt: state.currentQuestion?.ques_stmt || "",
+                  stmt_id: action.payload?.result?.id,
+                  transcript_text:
+                    action.payload?.result?.transcript_text || "",
+                  audio_path: action.payload?.result?.audio_path || "",
+                };
                 return {
                   ...data,
                   ...action.payload.result,
@@ -139,6 +148,13 @@ const indentityDataSlice = createSlice({
           if (action.payload && action.payload.body) {
             state.identityStatement = state.identityStatement.map((data) => {
               if (action.payload?.body.statementId === data.stmt_id) {
+                state.currentQuestion = {
+                  ...state.currentQuestion,
+                  id: state.currentQuestion?.id || -1,
+                  ques_stmt: state.currentQuestion?.ques_stmt || "",
+                  transcript_text: action.payload?.body?.transcriptText || "",
+                  audio_path: action.payload?.body?.audioPath || "",
+                };
                 return {
                   ...data,
                   transcript_text: action.payload?.body?.transcriptText,
@@ -166,26 +182,29 @@ const indentityDataSlice = createSlice({
         getSubmitedQuestions.fulfilled,
         (state: IIndentityDataType, action) => {
           if (action.payload) {
-            if (action.payload.result?.length) {
+            if (action.payload.result) {
               let dataArr: IQuestions[] = [];
               let isLastQuestionAdded = false;
               state.identityData?.questions.map((question, index) => {
                 const stmtData = action.payload?.result.find(
                   (data) => data.question_id === question.id
                 );
-                if (stmtData || !isLastQuestionAdded) {
-                  dataArr.push({
-                    ...(stmtData && stmtData),
-                    ques_stmt: question.ques_stmt,
-                    id: question.id,
-                    stmt_id: stmtData?.id,
-                  });
-                  state.currentIndex = index;
-                  state.currentQuestion = question;
-
-                  if (!stmtData) isLastQuestionAdded = true;
-                }
+                // if (stmtData || !isLastQuestionAdded) {
+                dataArr.push({
+                  ...(stmtData && stmtData),
+                  ques_stmt: stmtData?.question_text || question.ques_stmt,
+                  id: question.id,
+                  stmt_id: stmtData?.id,
+                  isQuestionUpdated:
+                    (stmtData?.question_text || question.ques_stmt) !==
+                    question.ques_stmt,
+                });
+                state.currentIndex = index;
+                // if (!stmtData) isLastQuestionAdded = true;
+                // }
               });
+              state.currentQuestion = dataArr[0];
+
               // action.payload.result.map((value, index) => {
               //   const questionData = state.identityData?.questions.find(
               //     (question) => question.id === value.question_id

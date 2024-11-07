@@ -11,4 +11,5 @@ export interface IQuestions {
   transcript_text?: string;
   audio_path?: string;
   stmt_id?: number;
+  isQuestionUpdated?: boolean;
 }

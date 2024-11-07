@@ -4,6 +4,7 @@ export type IQuestionStatement = {
   user_id: number | undefined;
   transcript_text: string;
   audio_path: string | undefined;
+  question_text?: string;
 };
 
 export interface IQuestionStatementResponse {
@@ -15,11 +16,13 @@ export interface IQuestionStatementResponse {
   id: number;
   createdAt: Date;
   updatedAt: Date;
-  deletedAt: null;
+  deletedAt: Date;
+  question_text?: string;
 }
 
 export type IUpdateStatementBody = {
   statementId: number;
   transcriptText: string;
   audioPath: string | null | undefined;
+  questionText: string;
 };

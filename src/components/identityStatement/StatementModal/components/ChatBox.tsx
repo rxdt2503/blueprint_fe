@@ -2,7 +2,7 @@ import "./styles.css";
 import { IoMdAttach, IoMdCloseCircle } from "react-icons/io";
 import { FaArrowCircleUp, FaStopCircle, FaEdit } from "react-icons/fa";
 import { IoClose, IoMicCircle } from "react-icons/io5";
-import { FaRegCircle, FaRegCircleCheck, FaMicrophone } from "react-icons/fa6";
+import { FaMicrophone } from "react-icons/fa6";
 
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -14,12 +14,8 @@ import {
   updateQuestionStatement,
 } from "../../../../services/redux/slices/identitySection/helper";
 import { IStore } from "../../../../services/redux";
-import {
-  pushQuestion,
-  setCurrentQuestion,
-} from "../../../../services/redux/slices/identitySection";
+import { setCurrentQuestion } from "../../../../services/redux/slices/identitySection";
 import { useAudioDataWithId } from "../../../../hooks/useAudioDataWithId";
-import NextPrevButton from "../../../NextPrevButton";
 import { ApiCall } from "../../../../services/api/call";
 import { useFilePicker } from "use-file-picker";
 import {
@@ -27,12 +23,19 @@ import {
   FileTypeValidator,
   FileSizeValidator,
 } from "use-file-picker/validators";
-import { IQuestions } from "../../../../services/api/entities/IIdentityQuestions";
 import { ThunkDispatch } from "@reduxjs/toolkit";
+import Loader from "../../../common/Loader";
+import { FrameworkPagination } from "../../../common/FrameworkPagination";
+import { LOADING } from "../../../../services/api/Constants";
 
 const ChatBox = () => {
-  const { identityData, identityStatement, currentIndex, currentQuestion } =
-    useSelector((state: IStore) => state.identityData);
+  const {
+    identityData,
+    identityStatement,
+    currentIndex,
+    currentQuestion,
+    identityDataStatus,
+  } = useSelector((state: IStore) => state.identityData);
 
   const dispatch = useDispatch<ThunkDispatch<any, any, any>>();
 
@@ -55,8 +58,6 @@ const ChatBox = () => {
     text?: string;
   };
 
-  const [prevEnabled, setPrevEnabled] = useState(false);
-  const [nextEnabled, setNextEnabled] = useState(false);
   const [pickButtonDisabled, setPickButtonDisabled] = useState(false);
   const [iswebApiSupport, setIsWebApiSupport] = useState(false);
   const [isLoading, setLoading] = useState(false);
@@ -76,6 +77,7 @@ const ChatBox = () => {
                 : null,
             statementId: currentQuestion?.stmt_id ?? -1,
             transcriptText: newMessage,
+            questionText: currentQuestion?.ques_stmt || "",
           })
         ).then(async (res: any) => {
           const responseData = res.payload?.result;
@@ -93,6 +95,7 @@ const ChatBox = () => {
             audio_path: currentQuestion
               ? audioObj[currentQuestion.id]?.audio
               : undefined,
+            question_text: currentQuestion?.ques_stmt,
           })
         );
 
@@ -108,7 +111,7 @@ const ChatBox = () => {
           identityData?.questions &&
           identityData?.questions?.length > currentIndex + 1
         ) {
-          setNextEnabled(true);
+          // setNextEnabled(true);
           setPickButtonDisabled(true);
         }
 
@@ -121,11 +124,11 @@ const ChatBox = () => {
     }
   };
 
-  const onNextClickHandler = () => {
-    setNextEnabled(false);
-    setPickButtonDisabled(false);
-    dispatch(pushQuestion({}));
-  };
+  // const onNextClickHandler = () => {
+  //   setNextEnabled(false);
+  //   setPickButtonDisabled(false);
+  //   dispatch(pushQuestion({}));
+  // };
 
   const toggleRecording = (id: number) => {
     if (recordingId === id) {
@@ -268,7 +271,7 @@ const ChatBox = () => {
   });
 
   const [isEditing, setEditing] = useState(false);
-  const onEditHandler = (questionId: number, index: number) => {
+  const onEditHandler = (questionId: number) => {
     const stmtData = identityStatement.find((s) => s.id === questionId);
 
     if (stmtData) {
@@ -284,40 +287,51 @@ const ChatBox = () => {
         };
         return { ...prev };
       });
-      setNextEnabled(false);
+      // setNextEnabled(false);
       setPickButtonDisabled(false);
     }
   };
 
+  // useEffect(() => {
+  //   if (!isEditing) {
+  //     const stmtData = identityStatement[identityStatement.length - 1];
+  //     if (stmtData?.transcript_text) {
+  //       identityData?.questions &&
+  //         identityData?.questions?.length > currentIndex + 1 &&
+  //         setNextEnabled(true);
+  //       setPickButtonDisabled(true);
+  //     } else {
+  //       setNextEnabled(false);
+  //       setPickButtonDisabled(false);
+  //     }
+  //   }
+  // }, [identityStatement]);
+
   useEffect(() => {
     if (!isEditing) {
-      const stmtData = identityStatement[identityStatement.length - 1];
-      if (stmtData?.transcript_text) {
-        identityData?.questions &&
-          identityData?.questions?.length > currentIndex + 1 &&
-          setNextEnabled(true);
+      if (currentQuestion?.transcript_text) {
         setPickButtonDisabled(true);
       } else {
-        setNextEnabled(false);
         setPickButtonDisabled(false);
       }
     }
-  }, [identityStatement]);
+  }, [currentQuestion]);
 
   const onCancelEditing = () => {
-    const stmtData = identityStatement[identityStatement.length - 1];
-    if (stmtData?.transcript_text) {
-      identityData?.questions &&
-        identityData?.questions?.length > currentIndex + 1 &&
-        setNextEnabled(true);
-      setPickButtonDisabled(true);
-    } else {
-      setNextEnabled(false);
-      setPickButtonDisabled(false);
-    }
-    dispatch(setCurrentQuestion(stmtData));
+    // const stmtData = identityStatement[identityStatement.length - 1];
+    // if (stmtData?.transcript_text) {
+    //   identityData?.questions &&
+    //     identityData?.questions?.length > currentIndex + 1 &&
+    //     setNextEnabled(true);
+    //   setPickButtonDisabled(true);
+    // } else {
+    //   setNextEnabled(false);
+    //   setPickButtonDisabled(false);
+    // }
+    // dispatch(setCurrentQuestion(stmtData));
     setEditing(false);
     setNewMessage("");
+    setPickButtonDisabled(true);
     currentQuestion &&
       setAudioObj((prev) => {
         prev[currentQuestion?.id] = { audio: undefined, text: "" };
@@ -325,11 +339,20 @@ const ChatBox = () => {
       });
   };
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const handlePageChange = (event: any, value: any) => {
+    setCurrentPage(value);
+    const currentQ = identityStatement[value - 1];
+    dispatch(setCurrentQuestion(currentQ));
+    setEditing(false);
+    setNewMessage("");
+  };
+
   return (
     <div className="w-full bg-white shadow-md flex flex-col justify-between rounded-s-xl">
       {/* Chat Message */}
       <div className="flex flex-col overflow-y-scroll flex-1  p-4">
-        {identityStatement?.map((data, index) => {
+        {/* {identityStatement?.map((data, index) => {
           return (
             <>
               <div
@@ -358,26 +381,49 @@ const ChatBox = () => {
               ) : undefined}
             </>
           );
-        })}
+        })} */}
+
+        <>
+          <div
+            className="bg-gray-100 p-4 rounded-lg shadow-sm mb-4 w-1/2 "
+            style={{ alignSelf: "start" }}
+          >
+            <p>
+              Q.{currentPage} {currentQuestion?.ques_stmt}
+            </p>
+          </div>
+          {currentQuestion?.transcript_text ? (
+            <div className="w-1/2 self-end flex-row flex justify-end items-center gap-3 group">
+              <button
+                className="invisible group-hover:visible"
+                onClick={() => onEditHandler(currentQuestion.id)}
+              >
+                <FaEdit size={22} color="grey" />
+              </button>
+              <div className="bg-gray-100 p-4 rounded-lg shadow-sm mb-4">
+                {currentQuestion?.audio_path ? (
+                  <audio src={currentQuestion?.audio_path} controls={true} />
+                ) : null}
+                <p>{currentQuestion.transcript_text}</p>
+              </div>
+            </div>
+          ) : undefined}
+        </>
       </div>
 
       {/* Input box */}
       <div className="flex flex-col rounded-xl overflow-hidden">
-        {/* <div className="flex flex-row items-center justify-center gap-2">
-          {identityData?.questions.map((question) => {
-            return (
-              <>
-                <FaRegCircleCheck size={22} color="grey" />
-                <FaRegCircle size={22} color="grey" />
-              </>
-            );
-          })}
-        </div> */}
-        <NextPrevButton
-          nextEnabled={nextEnabled}
-          prevEnabled={prevEnabled}
-          onNextClickHandler={onNextClickHandler}
-        />
+        <div className="flex flex-row items-center justify-center ">
+          <FrameworkPagination
+            currentPage={currentPage}
+            onPageChange={(a) => {
+              setCurrentPage(a);
+              handlePageChange(undefined, a);
+            }}
+            totalPages={identityStatement?.length}
+            identityStatement={identityStatement}
+          />
+        </div>
 
         <div className="flex-row flex flex-grow">
           <div
@@ -427,6 +473,10 @@ const ChatBox = () => {
                 />
               </div>
             ) : null}
+
+            {isLoading || identityDataStatus === LOADING ? (
+              <Loader />
+            ) : undefined}
           </div>
           <div className="flex flex-col">
             <button
@@ -439,10 +489,6 @@ const ChatBox = () => {
                 color={pickButtonDisabled ? "grey" : "black"}
               />
             </button>
-            {/* <button className=" p-2 border-b-2 border-gray-200">
-              <FaMicrophone size={24} />
-            </button> */}
-
             {!iswebApiSupport ? (
               <div className="flex justify-center">
                 {/* record */}
@@ -460,7 +506,6 @@ const ChatBox = () => {
                     downloadOnSavePress={false}
                     downloadFileExtension="webm"
                     showVisualizer={false}
-                    // mediaRecorderOptions={{}}
                   />
                 )}
               </div>
@@ -483,15 +528,6 @@ const ChatBox = () => {
                 )}
               </button>
             )}
-
-            {/* <div>
-              <button onClick={() => toggleRecording(currentQuestion?.id || 0)}>
-                {recordingId === currentQuestion?.id
-                  ? "Stop Recording"
-                  : "Start Recording"}
-              </button>
-            </div> */}
-
             <button
               className=" p-2 rounded-lg hover:pointer-events-auto"
               disabled={pickButtonDisabled}
