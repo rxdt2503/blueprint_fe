@@ -1,0 +1,23 @@
+{
+    "id":1,
+    "section":"identity",
+    "type":"identity_statement",
+    "questions":[
+        {
+            "id":1,
+            "ques_stmt":"What has been your experience of how an organization’s identity is developed?"
+        },
+        {
+            "id":2,
+            "ques_stmt":"What comes to mind when you hear the words “organizational identity”?"
+        },
+        {
+            "id":3,
+            "ques_stmt":"What are the values or future hopes each one of you have."
+        },
+        {
+            "id":4,
+            "ques_stmt":"What is enduring purpose that has always driven us"
+        }
+    ]
+}

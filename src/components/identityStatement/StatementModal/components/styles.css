@@ -1,0 +1,7 @@
+.box {
+  @apply flex flex-col w-full border border-black;
+}
+
+.chatArea {
+  @apply h-1/2;
+}
