@@ -159,6 +159,7 @@ const indentityDataSlice = createSlice({
                   ...data,
                   transcript_text: action.payload?.body?.transcriptText,
                   audio_path: action.payload?.body?.audioPath || "",
+                  isQuestionUpdated: state.currentQuestion.isQuestionUpdated,
                 };
               }
               return data;

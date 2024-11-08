@@ -272,24 +272,24 @@ const ChatBox = () => {
 
   const [isEditing, setEditing] = useState(false);
   const onEditHandler = (questionId: number) => {
-    const stmtData = identityStatement.find((s) => s.id === questionId);
+    // const stmtData = identityStatement.find((s) => s.id === questionId);
 
-    if (stmtData) {
-      // setEditQuestion(stmtData);
-      dispatch(setCurrentQuestion(stmtData));
-      setEditing(true);
-      setNewMessage(stmtData.transcript_text || "");
-      setAudioObj((prev) => {
-        prev[questionId] = {
-          ...prev[questionId],
-          text: stmtData.transcript_text,
-          audio: stmtData.audio_path,
-        };
-        return { ...prev };
-      });
-      // setNextEnabled(false);
-      setPickButtonDisabled(false);
-    }
+    // if (stmtData) {
+    // setEditQuestion(stmtData);
+    // dispatch(setCurrentQuestion(stmtData));
+    setEditing(true);
+    setNewMessage(currentQuestion?.transcript_text || "");
+    setAudioObj((prev) => {
+      prev[questionId] = {
+        ...prev[questionId],
+        text: currentQuestion?.transcript_text,
+        audio: currentQuestion?.audio_path,
+      };
+      return { ...prev };
+    });
+    // setNextEnabled(false);
+    setPickButtonDisabled(false);
+    // }
   };
 
   // useEffect(() => {
@@ -348,6 +348,22 @@ const ChatBox = () => {
     setNewMessage("");
   };
 
+  const newQuesionUpdateHandler = () => {
+    const newQuestion = identityData?.questions.find(
+      (question) => question.id === currentQuestion?.id
+    );
+    // currentQuestion?.audio_path
+    dispatch(
+      setCurrentQuestion({
+        ...currentQuestion,
+        ques_stmt: newQuestion?.ques_stmt,
+        isQuestionUpdated: false,
+      })
+    );
+
+    onEditHandler(currentQuestion?.id || -1);
+  };
+
   return (
     <div className="w-full bg-white shadow-md flex flex-col justify-between rounded-s-xl">
       {/* Chat Message */}
@@ -392,6 +408,17 @@ const ChatBox = () => {
               Q.{currentPage} {currentQuestion?.ques_stmt}
             </p>
           </div>
+          {currentQuestion?.isQuestionUpdated && (
+            <div className="flex flex-row w-fit gap-5 items-center bg-silverColor p-2 rounded-lg">
+              <p>Question is updated. Do you want to answer to new question?</p>
+              <button
+                className="bg-accentColor text-white px-4 py-2 rounded hover:bg-slate-700"
+                onClick={newQuesionUpdateHandler}
+              >
+                Yes
+              </button>{" "}
+            </div>
+          )}
           {currentQuestion?.transcript_text ? (
             <div className="w-1/2 self-end flex-row flex justify-end items-center gap-3 group">
               <button
@@ -413,7 +440,7 @@ const ChatBox = () => {
 
       {/* Input box */}
       <div className="flex flex-col rounded-xl overflow-hidden">
-        <div className="flex flex-row items-center justify-center ">
+        <div className="flex flex-row items-center justify-center mb-2">
           <FrameworkPagination
             currentPage={currentPage}
             onPageChange={(a) => {

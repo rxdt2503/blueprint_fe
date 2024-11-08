@@ -1,7 +1,7 @@
 // update this flag for testing and prod server
 const isProd = false;
 
-export const TEST_HOST = "7a43-180-211-112-179.ngrok-free.app";
+export const TEST_HOST = "c918-180-211-112-179.ngrok-free.app";
 export const PROD_HOST = "api.grublr.com";
 
 export let HOST = isProd ? PROD_HOST : TEST_HOST;
